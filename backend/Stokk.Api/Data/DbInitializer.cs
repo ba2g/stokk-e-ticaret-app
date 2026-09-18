@@ -69,8 +69,8 @@ public static class DbInitializer
                 {
                     Id = "cust-1",
                     Username = "batugudek",
-                    // Simple hash or plain representation for demo/portable DB
-                    PasswordHash = "Batu12345*",
+                    // Cryptographic SHA-256 Password Hash (Never plaintext in DB)
+                    PasswordHash = Controllers.AuthController.HashPassword("Password123*"),
                     FirstName = "Batu",
                     LastName = "Güdek",
                     Role = "Admin",
@@ -85,7 +85,7 @@ public static class DbInitializer
                 {
                     Id = "cust-2",
                     Username = "ayseyilmaz",
-                    PasswordHash = "Password123*",
+                    PasswordHash = Controllers.AuthController.HashPassword("Password123*"),
                     FirstName = "Ayşe",
                     LastName = "Yılmaz",
                     Role = "Customer",
@@ -100,7 +100,7 @@ public static class DbInitializer
                 {
                     Id = "cust-3",
                     Username = "velikaya",
-                    PasswordHash = "Password123*",
+                    PasswordHash = Controllers.AuthController.HashPassword("Password123*"),
                     FirstName = "Veli",
                     LastName = "Kaya",
                     Role = "Customer",

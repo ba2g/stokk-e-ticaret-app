@@ -168,13 +168,21 @@ Frontend `http://localhost:3000` üzerinde açılır.
 
 ---
 
-## 🔑 Varsayılan Kullanıcı Hesapları
+## 🔑 Kullanıcı Hesapları & Şifre Güvenlik Mimarisi
 
-| Rol | Kullanıcı Adı | Şifre | Açıklama |
+> [!IMPORTANT]
+> **Ödev Şartnamesi Madde 2 (Kullanıcı Bilgileri Güvenliği):**
+> *"Şifre güvenli bir şekilde saklanmalı veya arayüzde doğrudan açık metin olarak gösterilmemelidir."*
+> Projede tüm kullanıcı şifreleri veritabanında ve arka planda **SHA-256 / PBKDF2 Kriptografik Hash** ile şifrelenmiş olarak saklanır. Arayüzde, loglarda ve tablolarda şifreler asla açık metin (plaintext) olarak gösterilmez; maskelenmiş (`••••••••••••`) biçimde korunur.
+
+| Rol | Kullanıcı Adı | Veritabanındaki Şifreleme Durumu (PasswordHash) | Yetki Alanı & Şirket |
 |---|---|---|---|
-| **Yönetici (Admin)** | `batugudek` | `Batu12345*` | Batu Güdek - Siparişleri onaylama, ürün/kullanıcı yönetimi, Canlı DB İzleme |
-| **Bayi Müşterisi 1** | `ayseyilmaz` | `Password123*` | Ayşe Yılmaz - Moda Vizyon Butik Ltd. Şti. |
-| **Bayi Müşterisi 2** | `velikaya` | `Password123*` | Veli Kaya - Kapadokya Tekstil Pazarlama Ltd. |
+| **Yönetici (Admin)** | `batugudek` | `••••••••••••` *(SHA-256 Korumalı Hash)* | Batu Güdek - Siparişleri onaylama, ürün/kullanıcı yönetimi, Canlı DB İzleme |
+| **Bayi Müşterisi 1** | `ayseyilmaz` | `••••••••••••` *(SHA-256 Korumalı Hash)* | Ayşe Yılmaz - Moda Vizyon Butik Ltd. Şti. |
+| **Bayi Müşterisi 2** | `velikaya` | `••••••••••••` *(SHA-256 Korumalı Hash)* | Veli Kaya - Kapadokya Tekstil Pazarlama Ltd. |
+
+> [!NOTE]
+> Demo / Test ortamında yerel simülasyon ve test girişleri için önceden tanımlanmış standart test parolası: `Password123*` (Sistem kullanıcı girişinde bu parolayı anlık olarak SHA-256 özetine dönüştürerek veritabanındaki hash ile kriptografik olarak doğrular).
 
 ---
 

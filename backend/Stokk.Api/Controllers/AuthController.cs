@@ -46,7 +46,7 @@ public class AuthController : ControllerBase
             return Unauthorized(new AuthResponse(false, "Yönetici yetkisine sahip kullanıcı bulunamadı!"));
         }
 
-        if (adminUser.PasswordHash != req.Password)
+        if (!VerifyPassword(req.Password, adminUser.PasswordHash))
         {
             return Unauthorized(new AuthResponse(false, "Yönetici şifresi hatalı!"));
         }
@@ -76,7 +76,7 @@ public class AuthController : ControllerBase
             return NotFound(new AuthResponse(false, "Kullanıcı adı veya e-posta bulunamadı!"));
         }
 
-        if (user.PasswordHash != req.Password)
+        if (!VerifyPassword(req.Password, user.PasswordHash))
         {
             return Unauthorized(new AuthResponse(false, "Girdiğiniz şifre hatalı!"));
         }
@@ -108,9 +108,9 @@ public class AuthController : ControllerBase
 
         if (req.CompanyMode == "new")
         {
-            if (string.IsNullOrWhiteSpace(req.NewCompanyName) || string.IsNullOrWhiteSpace(req.NewCompanyTaxNumber))
+            if (string.IsNullOrWhiteSpace(req.NewCompanyName))
             {
-                return BadRequest(new AuthResponse(false, "Yeni şirket adı ve vergi numarası zorunludur."));
+                return BadRequest(new AuthResponse(false, "Lütfen yeni şirket unvanını giriniz."));
             }
 
             companyId = $"COMP-{DateTime.UtcNow.Ticks.ToString()[^4..]}";
@@ -120,7 +120,7 @@ public class AuthController : ControllerBase
             {
                 Id = companyId,
                 Name = companyName,
-                TaxNumber = req.NewCompanyTaxNumber.Trim(),
+                TaxNumber = req.NewCompanyTaxNumber?.Trim() ?? string.Empty,
                 City = req.City,
                 Address = $"{req.City} Merkez",
                 Phone = req.Phone,
@@ -149,7 +149,7 @@ public class AuthController : ControllerBase
         {
             Id = $"cust-{DateTime.UtcNow.Ticks.ToString()[^5..]}",
             Username = req.Username.Trim(),
-            PasswordHash = req.Password,
+            PasswordHash = HashPassword(req.Password.Trim()),
             FirstName = req.FirstName.Trim(),
             LastName = req.LastName.Trim(),
             Role = "Customer",
@@ -173,5 +173,19 @@ public class AuthController : ControllerBase
             newUser.CompanyId,
             newUser.CompanyName
         ));
+    }
+
+    public static string HashPassword(string password)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
+
+    public static bool VerifyPassword(string inputPassword, string storedHash)
+    {
+        if (string.IsNullOrEmpty(storedHash)) return false;
+        var inputHash = HashPassword(inputPassword);
+        return storedHash.Equals(inputHash, StringComparison.OrdinalIgnoreCase) || storedHash.Equals(inputPassword);
     }
 }

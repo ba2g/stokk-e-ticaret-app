@@ -73,10 +73,10 @@ public class UsersController : ControllerBase
         if (!string.IsNullOrWhiteSpace(req.CompanyName)) user.CompanyName = req.CompanyName;
         if (!string.IsNullOrWhiteSpace(req.Role)) user.Role = req.Role;
 
-        // If password is updated
+        // If password is updated, hash it cryptographically
         if (!string.IsNullOrWhiteSpace(req.Password))
         {
-            user.PasswordHash = req.Password.Trim();
+            user.PasswordHash = AuthController.HashPassword(req.Password.Trim());
         }
 
         await _context.SaveChangesAsync();

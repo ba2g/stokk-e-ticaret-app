@@ -201,11 +201,11 @@ INSERT INTO dbo.Companies (Id, Name, TaxNumber, City, Address, Phone, Email) VAL
 ('COMP-002', N'Anadolu Giyim Mağazacılık A.Ş.', '3190827341', N'Konya', N'Mevlana Cad. No:18', '+90 332 321 45 67', 'iletisim@anadolugiyim.com'),
 ('COMP-003', N'Boğaziçi Tekstil & Moda Ltd.', '1982736450', N'İstanbul', N'Nişantaşı Abdi İpekçi Cad.', '+90 212 234 56 78', 'siparis@bogazicitekstil.com');
 
--- 2. Kullanıcılar (Sistem Yöneticisi Batu Güdek + Müşteriler)
+-- 2. Kullanıcılar (Sistem Yöneticisi Batu Güdek + Müşteriler - Şifreler Kriptografik SHA-256 Olarak Saklanır)
 INSERT INTO dbo.Users (Id, Username, PasswordHash, FirstName, LastName, Role, CompanyId, CompanyName, Email, Phone, City, CreatedAt) VALUES
-('cust-1', 'batugudek', 'Password123*', N'Batu', N'Güdek', 'Admin', 'COMP-001', N'Moda Vizyon Butik Ltd. Şti.', 'batugudek1@gmail.com', '+90 (532) 450 12 34', N'Kayseri', '18.09.2026'),
-('cust-2', 'ayseyilmaz', 'Password123*', N'Ayşe', N'Yılmaz', 'Customer', 'COMP-001', N'Moda Vizyon Butik Ltd. Şti.', 'ayse.yilmaz@modavizyon.com', '+90 (533) 111 22 33', N'Kayseri', '18.09.2026'),
-('cust-3', 'velikaya', 'Password123*', N'Veli', N'Kaya', 'Customer', 'COMP-002', N'Anadolu Giyim Mağazacılık A.Ş.', 'veli.kaya@anadolugiyim.com', '+90 (544) 222 33 44', N'Konya', '18.09.2026');
+('cust-1', 'batugudek', '0f42bcbeedf89160a6cf7ccafe68080f2aafb73b3ef057df6b5e22f1294d0a10', N'Batu', N'Güdek', 'Admin', 'COMP-001', N'Moda Vizyon Butik Ltd. Şti.', 'batugudek1@gmail.com', '+90 (532) 450 12 34', N'Kayseri', '18.09.2026'),
+('cust-2', 'ayseyilmaz', '0f42bcbeedf89160a6cf7ccafe68080f2aafb73b3ef057df6b5e22f1294d0a10', N'Ayşe', N'Yılmaz', 'Customer', 'COMP-001', N'Moda Vizyon Butik Ltd. Şti.', 'ayse.yilmaz@modavizyon.com', '+90 (533) 111 22 33', N'Kayseri', '18.09.2026'),
+('cust-3', 'velikaya', '0f42bcbeedf89160a6cf7ccafe68080f2aafb73b3ef057df6b5e22f1294d0a10', N'Veli', N'Kaya', 'Customer', 'COMP-002', N'Anadolu Giyim Mağazacılık A.Ş.', 'veli.kaya@anadolugiyim.com', '+90 (544) 222 33 44', N'Konya', '18.09.2026');
 
 -- 3. Ürünler (Özel Kodlar, Eşik Stok, Toptan Satış Fiyatları)
 INSERT INTO dbo.Products (Id, ProductCode, Name, Brand, Description, ManufacturerCode, Manufacturer, SpecialCode1, SpecialCode2, Image, Stock, CriticalStockThreshold, Price, CreatedAt) VALUES

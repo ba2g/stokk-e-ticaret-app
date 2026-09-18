@@ -202,11 +202,11 @@ INSERT INTO dbo.Companies (CompanyId, CompanyName, TaxNumber, City, Address, Pho
 ('COMP-002', N'Anadolu Giyim Mağazacılık A.Ş.', '3190827341', N'Konya', N'Mevlana Cad. No:18', '+90 332 321 45 67', 'iletisim@anadolugiyim.com'),
 ('COMP-003', N'Boğaziçi Tekstil & Moda Ltd.', '1982736450', N'İstanbul', N'Nişantaşı Abdi İpekçi Cad.', '+90 212 234 56 78', 'siparis@bogazicitekstil.com');
 
--- 2. Kullanıcılar (Batu Güdek Yönetici + Müşteriler)
+-- 2. Kullanıcılar (Batu Güdek Yönetici + Müşteriler - Şifreler Kriptografik SHA-256 Olarak Saklanır)
 INSERT INTO dbo.Customers (CustomerId, FirstName, LastName, Email, Phone, Username, PasswordHash, CompanyId, Role) VALUES
-('cust-1', N'Batu', N'Güdek', 'batugudek1@gmail.com', '+90 (532) 450 12 34', 'batugudek', 'Password123*', 'COMP-001', 'Admin'),
-('cust-2', N'Ayşe', N'Yılmaz', 'ayse.yilmaz@modavizyon.com', '+90 (533) 111 22 33', 'ayseyilmaz', 'Password123*', 'COMP-001', 'Customer'),
-('cust-3', N'Veli', N'Kaya', 'veli.kaya@anadolugiyim.com', '+90 (544) 222 33 44', 'velikaya', 'Password123*', 'COMP-002', 'Customer');
+('cust-1', N'Batu', N'Güdek', 'batugudek1@gmail.com', '+90 (532) 450 12 34', 'batugudek', '0f42bcbeedf89160a6cf7ccafe68080f2aafb73b3ef057df6b5e22f1294d0a10', 'COMP-001', 'Admin'),
+('cust-2', N'Ayşe', N'Yılmaz', 'ayse.yilmaz@modavizyon.com', '+90 (533) 111 22 33', 'ayseyilmaz', '0f42bcbeedf89160a6cf7ccafe68080f2aafb73b3ef057df6b5e22f1294d0a10', 'COMP-001', 'Customer'),
+('cust-3', N'Veli', N'Kaya', 'veli.kaya@anadolugiyim.com', '+90 (544) 222 33 44', 'velikaya', '0f42bcbeedf89160a6cf7ccafe68080f2aafb73b3ef057df6b5e22f1294d0a10', 'COMP-002', 'Customer');
 
 -- 3. Ürünler
 INSERT INTO dbo.Products (ProductId, ProductCode, ProductName, Brand, Manufacturer, ManufacturerCode, SpecialCode1, SpecialCode2, Description, Price, StockQuantity, ImageUrl) VALUES
