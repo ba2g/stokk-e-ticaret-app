@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: stokk_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: stokk_db
+      POSTGRES_USER: stokk_user
+      POSTGRES_PASSWORD: stokk_secure_pass_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - stokk_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stokk_user -d stokk_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. ASP.NET Core 8 Web API Backend
+  backend:
+    build:
+      context: ./backend/Stokk.Api
+      dockerfile: Dockerfile
+    container_name: stokk_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DatabaseProvider=PostgreSql
+      - ConnectionStrings__PostgreSql=Host=postgres;Port=5432;Database=stokk_db;Username=stokk_user;Password=stokk_secure_pass_2026;Include Error Detail=true
+      - CorsOrigins__0=http://localhost:3000
+      - CorsOrigins__1=http://127.0.0.1:3000
+    ports:
+      - "5000:5000"
+
+  # 3. React 19 Frontend Web Application (Nginx SPA + Reverse Proxy)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stokk_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  stokk_pgdata:
+    driver: local

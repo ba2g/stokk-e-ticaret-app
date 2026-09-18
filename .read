@@ -66,3 +66,24 @@ Set `DatabaseProvider` to one of the following values:
 5. **Role Isolation:**
    - Admin (`batugudek`) has exclusive rights to approve orders, manage users, and view Live DB Inspector.
    - Customers only see their own cart and orders.
+
+---
+
+## 5. Docker Orchestration
+Run the entire stack (PostgreSQL + .NET Backend + React SPA) with a single command:
+```bash
+docker compose up -d --build
+```
+- Ports:
+  - Frontend: `http://localhost:3000`
+  - Backend: `http://localhost:5000`
+  - Swagger: `http://localhost:5000/swagger`
+  - PostgreSQL: `5432`
+
+---
+
+## 6. ERP Integration Endpoints
+- Synchronize inventory: `POST /api/products`, `PUT /api/products/{id}/stock`
+- Poll incoming orders: `GET /api/orders`
+- Customer registration hook: `POST /api/auth/register`
+
