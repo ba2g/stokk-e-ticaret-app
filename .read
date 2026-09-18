@@ -1,0 +1,68 @@
+# .READ - STOKK B2B ARCHITECTURE & DEVELOPER REFERENCE
+
+This file serves as the core technical reference for the Stokk B2B & Customer Order Management Platform.
+
+---
+
+## 1. Architecture Overview
+- **Pattern:** Layered Microservice-Oriented Architecture with Pluggable Entity Framework Core 8 persistence.
+- **Frontend:** React 19 + TypeScript + Vite + Tailwind CSS (`src/`).
+- **Backend:** ASP.NET Core 8 Web API (`backend/Stokk.Api/`).
+
+---
+
+## 2. Pluggable Database Configuration (`appsettings.json`)
+Set `DatabaseProvider` to one of the following values:
+- `Sqlite`: Uses local SQLite file (`stokk_app.db`). Zero configuration needed.
+- `PostgreSql`: Uses PostgreSQL server with `Npgsql.EntityFrameworkCore.PostgreSQL`.
+- `SqlServer`: Uses Microsoft SQL Server with `Microsoft.EntityFrameworkCore.SqlServer`.
+- `InMemory`: Uses EF Core In-Memory database for instant integration tests.
+
+---
+
+## 3. Core API Endpoints
+
+### Authentication & Company (`/api/auth`)
+- `POST /api/auth/admin-login` -> Batu Güdek administrator authentication.
+- `POST /api/auth/login` -> Customer login with username/password check.
+- `POST /api/auth/register` -> Register user with 1-N Company rule validation.
+- `GET  /api/auth/companies` -> List all active registered companies.
+
+### Products (`/api/products`)
+- `GET    /api/products` -> List products.
+- `GET    /api/products/{id}` -> Get product detail with stock change logs.
+- `POST   /api/products` -> Create product with `CriticalStockThreshold`.
+- `PUT    /api/products/{id}/stock` -> Delta stock adjustment with action log.
+- `DELETE /api/products/{id}` -> Remove product.
+
+### Orders (`/api/orders`)
+- `GET  /api/orders?userId={id}` -> User-isolated orders list. If `userId` omitted, returns all (Admin).
+- `GET  /api/orders/{id}` -> Detailed order receipt with frozen unit prices and payment method.
+- `POST /api/orders` -> Place order with Payment Method (`Nakit`, `Çek`, `Bakiye`), deduct stock, clear user cart.
+- `PUT  /api/orders/{id}/status` -> Enforce strict state machine transitions (`Hazırlanıyor` -> `Onaylandı`/`Reddedildi` -> `Yolda` -> `Teslim Edildi`).
+
+### Shopping Carts (`/api/carts`)
+- `GET    /api/carts/{userId}` -> User-isolated shopping cart items.
+- `POST   /api/carts` -> Add item to cart.
+- `PUT    /api/carts/{id}` -> Update item quantity.
+- `DELETE /api/carts/{id}` -> Remove item from cart.
+- `DELETE /api/carts/clear/{userId}` -> Wipe user's cart.
+
+### Live DB Inspector (`/api/inspector`)
+- `GET /api/inspector/snapshot` -> Live database record counts and raw table data (Admin only).
+
+---
+
+## 4. Key Business Logic Rules
+1. **1-N Company Rule:** One company has multiple employees, but an employee belongs to exactly one company.
+2. **Order Price Snapshot:** When an order is placed, product prices are permanently frozen in `OrderItem.UnitPrice`. Later price changes do not affect past orders.
+3. **Order State Machine:**
+   - Onaylandı cannot be rejected afterwards.
+   - Teslim Edildi and Reddedildi are terminal and immutable.
+4. **Stock Threshold:**
+   - Stock == 0 -> Red (Kritik Tükendi)
+   - Stock <= CriticalStockThreshold -> Yellow (Kritik Stok Uyarısı)
+   - Stock > CriticalStockThreshold -> Green (Yeterli Stok)
+5. **Role Isolation:**
+   - Admin (`batugudek`) has exclusive rights to approve orders, manage users, and view Live DB Inspector.
+   - Customers only see their own cart and orders.

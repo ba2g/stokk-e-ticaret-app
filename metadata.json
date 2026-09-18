@@ -1,0 +1,6 @@
+{
+  "name": "Stokk E-Ticaret & Müşteri Yönetim Portalı",
+  "description": "E-Ticaret vitrini, müşteri hesapları (ad, soyad, e-posta, telefon, kullanıcı adı, şifre), sipariş ve stok yönetimi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
