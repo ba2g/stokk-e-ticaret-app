@@ -78,7 +78,21 @@ public class OrdersController : ControllerBase
             TotalAmount = req.Items.Sum(i => i.Quantity * i.UnitPrice)
         };
 
-        // Populate order items and deduct stock
+        // 1. Strict Stock Verification before order placement
+        foreach (var item in req.Items)
+        {
+            var prod = await _context.Products.FindAsync(item.ProductId);
+            if (prod == null)
+            {
+                return BadRequest(new { message = $"Ürün bulunamadı (ID: {item.ProductId})." });
+            }
+            if (prod.Stock < item.Quantity)
+            {
+                return BadRequest(new { message = $"Ürün '{prod.Name}' için yeterli stok bulunmamaktadır. Mevcut stok: {prod.Stock}." });
+            }
+        }
+
+        // 2. Populate order items and deduct stock
         foreach (var item in req.Items)
         {
             order.Items.Add(new OrderItem

@@ -76,3 +76,30 @@ public record AddToCartRequest(
 );
 
 public record UpdateCartQtyRequest(int Quantity);
+
+public record UpdateUserRequest(
+    string FirstName,
+    string LastName,
+    string Email,
+    string Phone,
+    string? City,
+    string? CompanyId,
+    string? CompanyName,
+    string? Role,
+    string? Password
+);
+
+public record UpdateProductRequest(
+    string ProductCode,
+    string Name,
+    string Brand,
+    string Description,
+    string ManufacturerCode,
+    string Manufacturer,
+    string SpecialCode1,
+    string SpecialCode2,
+    string Image,
+    int Stock,
+    int CriticalStockThreshold,
+    decimal Price
+);

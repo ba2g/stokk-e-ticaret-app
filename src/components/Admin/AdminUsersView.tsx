@@ -35,6 +35,54 @@ export const AdminUsersView: React.FC<AdminUsersViewProps> = ({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Edit User State & Handlers
+  const [editingUser, setEditingUser] = useState<Customer | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editUsername, setEditUsername] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editCompanyId, setEditCompanyId] = useState('');
+  const [editRole, setEditRole] = useState<'Admin' | 'Customer'>('Customer');
+
+  const handleOpenEditModal = (u: Customer) => {
+    setEditingUser(u);
+    setEditFirstName(u.firstName);
+    setEditLastName(u.lastName);
+    setEditEmail(u.email);
+    setEditPhone(u.phone || '');
+    setEditUsername(u.username);
+    setEditPassword('');
+    setEditCompanyId(u.companyId || companies[0]?.id || 'COMP-001');
+    setEditRole((u.role as 'Admin' | 'Customer') || 'Customer');
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEditUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    const targetCompany = companies.find((c) => c.id === editCompanyId);
+    const updated: Customer = {
+      ...editingUser,
+      firstName: editFirstName.trim(),
+      lastName: editLastName.trim(),
+      email: editEmail.trim(),
+      phone: editPhone.trim(),
+      username: editUsername.trim(),
+      password: editPassword.trim() ? editPassword.trim() : editingUser.password,
+      companyId: editCompanyId,
+      companyName: targetCompany ? targetCompany.name : editingUser.companyName,
+      role: editRole,
+    };
+    userService.updateUser(updated);
+    showToast(`'${updated.firstName} ${updated.lastName}' kullanıcı bilgileri başarıyla güncellendi.`);
+    setIsEditModalOpen(false);
+    setEditingUser(null);
+    reloadData();
+  };
+
   const users = propUsers || localUsers;
   const companies = propCompanies || localCompanies;
 
@@ -280,16 +328,26 @@ export const AdminUsersView: React.FC<AdminUsersViewProps> = ({
 
                     {/* İşlem */}
                     <td className="py-3.5 px-4 text-center">
-                      {u.id !== 'cust-1' && (
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           type="button"
-                          onClick={() => handleDeleteUser(u.id, `${u.firstName} ${u.lastName}`)}
-                          className="p-1.5 rounded-lg text-[#ba1a1a] hover:bg-[#ffdad6] transition-colors"
-                          title="Kullanıcıyı Sil"
+                          onClick={() => handleOpenEditModal(u)}
+                          className="p-1.5 rounded-lg text-[#006194] hover:bg-[#eff4ff] transition-colors cursor-pointer"
+                          title="Kullanıcı Bilgilerini Düzenle"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Edit className="w-4 h-4" />
                         </button>
-                      )}
+                        {u.id !== 'cust-1' && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteUser(u.id, `${u.firstName} ${u.lastName}`)}
+                            className="p-1.5 rounded-lg text-[#ba1a1a] hover:bg-[#ffdad6] transition-colors cursor-pointer"
+                            title="Kullanıcıyı Sil"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -455,6 +513,159 @@ export const AdminUsersView: React.FC<AdminUsersViewProps> = ({
                   className="px-5 py-2 rounded-xl bg-[#006194] hover:bg-[#007bb9] text-white font-bold"
                 >
                   Kullanıcıyı Kaydet
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* KULLANICI DÜZENLEME MODALI */}
+      {isEditModalOpen && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/50 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white w-full max-w-xl rounded-3xl border border-[#dce9ff] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 bg-[#eff4ff] border-b border-[#dce9ff] flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#006194] block">
+                  KULLANICI DÜZENLEME ({editingUser.id})
+                </span>
+                <h2 className="font-heading text-base font-bold text-[#0b1c30]">
+                  {editingUser.firstName} {editingUser.lastName} Detaylarını Güncelle
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingUser(null);
+                }}
+                className="p-1.5 rounded-lg text-[#565e74] hover:bg-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditUser} className="p-6 overflow-y-auto space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-[#0b1c30] block mb-1">Ad *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFirstName}
+                    onChange={(e) => setEditFirstName(e.target.value.replace(/[^a-zA-ZçÇğĞıİöÖşŞüÜ\s]/g, ''))}
+                    className="w-full h-9 px-3 bg-[#eff4ff] border border-[#dce9ff] rounded-xl focus:bg-white focus:outline-none focus:border-[#006194]"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-[#0b1c30] block mb-1">Soyad *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editLastName}
+                    onChange={(e) => setEditLastName(e.target.value.replace(/[^a-zA-ZçÇğĞıİöÖşŞüÜ\s]/g, ''))}
+                    className="w-full h-9 px-3 bg-[#eff4ff] border border-[#dce9ff] rounded-xl focus:bg-white focus:outline-none focus:border-[#006194]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-[#0b1c30] block mb-1">E-posta *</label>
+                  <input
+                    type="email"
+                    required
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full h-9 px-3 bg-[#eff4ff] border border-[#dce9ff] rounded-xl focus:bg-white focus:outline-none focus:border-[#006194]"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-[#0b1c30] block mb-1">Telefon *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="w-full h-9 px-3 bg-[#eff4ff] border border-[#dce9ff] rounded-xl font-mono focus:bg-white focus:outline-none focus:border-[#006194]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-[#0b1c30] block mb-1">Kullanıcı Adı *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editUsername}
+                    onChange={(e) => setEditUsername(e.target.value)}
+                    className="w-full h-9 px-3 bg-[#eff4ff] border border-[#dce9ff] rounded-xl font-mono focus:bg-white focus:outline-none focus:border-[#006194]"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-[#0b1c30] block mb-1">Yeni Şifre (Değişmeyecekse Boş Bırakın)</label>
+                  <input
+                    type="password"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    placeholder="Mevcut şifre korunur"
+                    className="w-full h-9 px-3 bg-[#eff4ff] border border-[#dce9ff] rounded-xl font-mono focus:bg-white focus:outline-none focus:border-[#006194]"
+                  />
+                </div>
+              </div>
+
+              {/* Şirket ve Rol Seçimi */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-[#0b1c30] block mb-1">Bağlı Olduğu Şirket</label>
+                  <select
+                    value={editCompanyId}
+                    onChange={(e) => setEditCompanyId(e.target.value)}
+                    className="w-full h-9 px-3 bg-white border border-[#dce9ff] rounded-xl font-medium focus:outline-none focus:border-[#006194]"
+                  >
+                    {companies.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="font-bold text-[#0b1c30] block mb-1">Sistem Rolü</label>
+                  <select
+                    value={editRole}
+                    onChange={(e) => setEditRole(e.target.value as 'Admin' | 'Customer')}
+                    disabled={editingUser.id === 'cust-1'}
+                    className="w-full h-9 px-3 bg-white border border-[#dce9ff] rounded-xl font-medium focus:outline-none focus:border-[#006194] disabled:bg-gray-100"
+                  >
+                    <option value="Customer">Müşteri / Bayi</option>
+                    <option value="Admin">Sistem Yöneticisi</option>
+                  </select>
+                  {editingUser.id === 'cust-1' && (
+                    <p className="text-[10px] text-[#707881] mt-0.5">
+                      * Ana yönetici hesabı rolü değiştirilemez.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#f1f5f9]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setEditingUser(null);
+                  }}
+                  className="px-4 py-2 rounded-xl text-[#565e74] hover:bg-[#eff4ff] cursor-pointer"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#006194] hover:bg-[#007bb9] text-white font-bold cursor-pointer"
+                >
+                  Değişiklikleri Kaydet
                 </button>
               </div>
             </form>

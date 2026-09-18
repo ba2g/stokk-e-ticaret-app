@@ -47,4 +47,56 @@ public class UsersController : ControllerBase
         if (user == null) return NotFound(new { message = "Kullanıcı bulunamadı." });
         return Ok(user);
     }
+
+    // Update User details (Ad, Soyad, E-posta, Telefon, Şirket, Rol, opsiyonel Şifre)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateUser(string id, [FromBody] Stokk.Api.Models.DTOs.UpdateUserRequest req)
+    {
+        var user = await _context.Users.FindAsync(id);
+        if (user == null) return NotFound(new { message = "Kullanıcı bulunamadı." });
+
+        // Email uniqueness check if changed
+        if (!string.IsNullOrWhiteSpace(req.Email) && req.Email.Trim().ToLower() != user.Email.ToLower())
+        {
+            if (await _context.Users.AnyAsync(u => u.Id != id && u.Email.ToLower() == req.Email.Trim().ToLower()))
+            {
+                return BadRequest(new { message = "Bu e-posta adresi başka bir kullanıcı tarafından kullanılmaktadır." });
+            }
+            user.Email = req.Email.Trim();
+        }
+
+        user.FirstName = req.FirstName.Trim();
+        user.LastName = req.LastName.Trim();
+        user.Phone = req.Phone?.Trim() ?? user.Phone;
+        if (!string.IsNullOrWhiteSpace(req.City)) user.City = req.City.Trim();
+        if (!string.IsNullOrWhiteSpace(req.CompanyId)) user.CompanyId = req.CompanyId;
+        if (!string.IsNullOrWhiteSpace(req.CompanyName)) user.CompanyName = req.CompanyName;
+        if (!string.IsNullOrWhiteSpace(req.Role)) user.Role = req.Role;
+
+        // If password is updated
+        if (!string.IsNullOrWhiteSpace(req.Password))
+        {
+            user.PasswordHash = req.Password.Trim();
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "Kullanıcı bilgileri başarıyla güncellendi.", user });
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        if (id == "cust-1")
+        {
+            return BadRequest(new { message = "Sistem yöneticisi (Batu Güdek) hesabı silinemez." });
+        }
+
+        var user = await _context.Users.FindAsync(id);
+        if (user == null) return NotFound(new { message = "Kullanıcı bulunamadı." });
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "Kullanıcı silindi." });
+    }
 }
+

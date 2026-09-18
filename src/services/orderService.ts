@@ -34,13 +34,14 @@ export class OrderService {
       return { success: false, error: 'Sepetinizde ürün bulunmamaktadır.' };
     }
 
-    // 1. Stock check
+    // 1. Stock check (Exact assignment requirement: "Ürün A için yeterli stok bulunmamaktadır. Mevcut stok: 5.")
     for (const item of cartItems) {
       const prod = productService.getProductById(item.productId);
-      if (!prod || prod.totalOnHand < item.quantity) {
+      const currentStock = prod ? prod.totalOnHand : 0;
+      if (!prod || currentStock < item.quantity) {
         return {
           success: false,
-          error: `Yetersiz stok: '${item.productName}' için mevcut stok (${prod ? prod.totalOnHand : 0}) talep edilen adedi karşılamıyor.`,
+          error: `Ürün '${item.productName}' için yeterli stok bulunmamaktadır. Mevcut stok: ${currentStock}.`,
         };
       }
     }

@@ -82,6 +82,37 @@ public class ProductsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(string id, [FromBody] UpdateProductRequest req)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null) return NotFound(new { message = "Ürün bulunamadı." });
+
+        if (!string.IsNullOrWhiteSpace(req.ProductCode) && req.ProductCode.Trim() != product.ProductCode)
+        {
+            if (await _context.Products.AnyAsync(p => p.Id != id && p.ProductCode == req.ProductCode.Trim()))
+            {
+                return BadRequest(new { message = "Bu ürün kodu başka bir ürüne atanmış." });
+            }
+            product.ProductCode = req.ProductCode.Trim();
+        }
+
+        product.Name = req.Name.Trim();
+        product.Brand = req.Brand.Trim();
+        product.Description = req.Description;
+        product.ManufacturerCode = req.ManufacturerCode;
+        product.Manufacturer = req.Manufacturer;
+        product.SpecialCode1 = req.SpecialCode1;
+        product.SpecialCode2 = req.SpecialCode2;
+        if (!string.IsNullOrWhiteSpace(req.Image)) product.Image = req.Image;
+        product.Stock = req.Stock;
+        product.CriticalStockThreshold = req.CriticalStockThreshold > 0 ? req.CriticalStockThreshold : 5;
+        product.Price = req.Price;
+
+        await _context.SaveChangesAsync();
+        return Ok(new { message = $"'{product.Name}' ürünü güncellendi.", product });
+    }
+
     [HttpPut("{id}/stock")]
     public async Task<IActionResult> UpdateStock(string id, [FromBody] UpdateStockRequest req)
     {

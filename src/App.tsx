@@ -310,7 +310,7 @@ export default function App() {
       const available = prod ? prod.totalOnHand : 0;
       if (item.quantity > available) {
         showToast(
-          `Yetersiz stok: '${item.productName}' için talep edilen ${item.quantity} adet, eldeki stok ${available} adet.`,
+          `Ürün '${item.productName}' için yeterli stok bulunmamaktadır. Mevcut stok: ${available}.`,
           'info'
         );
         return;
